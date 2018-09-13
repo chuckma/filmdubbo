@@ -8,6 +8,7 @@ import com.stylefeng.guns.rest.modular.auth.controller.dto.AuthRequest;
 import com.stylefeng.guns.rest.modular.auth.controller.dto.AuthResponse;
 import com.stylefeng.guns.rest.modular.auth.util.JwtTokenUtil;
 import com.stylefeng.guns.rest.modular.auth.validator.IReqValidator;
+import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,25 +28,31 @@ public class AuthController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    @Resource(name = "simpleValidator")
-    private IReqValidator reqValidator;
+//    @Resource(name = "simpleValidator")
+//    private IReqValidator reqValidator;
 
     @Reference(interfaceClass = UserAPI.class)
     private UserAPI userAPI;
 
     @RequestMapping(value = "${jwt.auth-path}")
-    public ResponseEntity<?> createAuthenticationToken(AuthRequest authRequest) {
+    public ResponseVO<?> createAuthenticationToken(AuthRequest authRequest) {
 
-        userAPI.login(authRequest.getUserName(), authRequest.getPassword());
+        boolean validate = true;  //reqValidator.validate(authRequest);
 
-        boolean validate = reqValidator.validate(authRequest);
-
+        int userId = 2;//userAPI.login(authRequest.getUserName(), authRequest.getPassword());
+        if (userId == 0) {
+            // 说明没有登录
+            validate = false;
+        }
         if (validate) {
+            // randomKey 和 token 生成完毕
             final String randomKey = jwtTokenUtil.getRandomKey();
-            final String token = jwtTokenUtil.generateToken(authRequest.getUserName(), randomKey);
-            return ResponseEntity.ok(new AuthResponse(token, randomKey));
+            final String token = jwtTokenUtil.generateToken(""+userId, randomKey);
+            // 返回值
+            return ResponseVO.success(new AuthResponse(token, randomKey));
+//            return ResponseEntity.ok(new AuthResponse(token, randomKey));
         } else {
-            throw new GunsException(BizExceptionEnum.AUTH_REQUEST_ERROR);
+            return ResponseVO.serviceFile("用户名或密码错误");
         }
     }
 }

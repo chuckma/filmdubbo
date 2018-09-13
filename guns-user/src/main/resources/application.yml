@@ -2,6 +2,7 @@ rest:
   auth-open: true #jwt鉴权机制是否开启(true或者false)
   sign-open: true #签名机制是否开启(true或false)
 
+# 该 module 不需要 jwt api 网关会做 jwt 的验证
 jwt:
   header: Authorization   #http请求头所需要的字段
   secret: mySecret        #jwt秘钥
@@ -10,7 +11,7 @@ jwt:
   md5-key: randomKey      #md5加密混淆key
 
 server:
-  port: 8080 #项目端口
+  port: 8083 #项目端口
 
 mybatis-plus:
   mapper-locations: classpath*:com/stylefeng/guns/rest/**/mapping/*.xml
@@ -27,6 +28,14 @@ mybatis-plus:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
 
 spring:
+  application:
+    name: meeting-user
+  dubbo:
+    server: true
+    registry: zookeeper://127.0.0.1:2181
+    protocol:
+      name: dubbo
+      port: 20881
   datasource:
       url: jdbc:mysql://127.0.0.1:3306/guns_rest?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false&serverTimezone=UTC
       username: root

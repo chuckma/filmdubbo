@@ -8,6 +8,7 @@ jwt:
   expiration: 604800      #7天 单位:秒
   auth-path: auth         #认证请求的路径
   md5-key: randomKey      #md5加密混淆key
+  ignore-url: /user/,/film  # 忽略列表
 
 server:
   port: 8080 #项目端口
@@ -27,6 +28,11 @@ mybatis-plus:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
 
 spring:
+  application:
+    name: meeting-gateway
+  dubbo:
+    server: true
+    registry: zookeeper://127.0.0.1:2181
   datasource:
       url: jdbc:mysql://127.0.0.1:3306/guns_rest?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false&serverTimezone=UTC
       username: root

@@ -1,8 +1,12 @@
 package com.stylefeng.guns.rest.modular.vo;
 
+import lombok.Data;
+
 /**
  * Created by lucasma
  */
+
+@Data
 public class ResponseVO<T> {
 
 
@@ -13,8 +17,21 @@ public class ResponseVO<T> {
     // 返回数据
     private T data;
 
+    // 图片前缀
+    private String imgPre;
+
 
     private  ResponseVO(){}
+
+
+    public static<T> ResponseVO success(String imgPre,T data) {
+        ResponseVO responseVO = new ResponseVO();
+        responseVO.setStatus(0);
+        responseVO.setData(data);
+        responseVO.setImgPre(imgPre);
+        return responseVO;
+    }
+
 
     public static<T> ResponseVO success(T data) {
         ResponseVO responseVO = new ResponseVO();
@@ -40,28 +57,4 @@ public class ResponseVO<T> {
         return responseVO;
     }
 
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
 }

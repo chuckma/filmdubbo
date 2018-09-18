@@ -31,8 +31,8 @@ public class AuthController {
 //    @Resource(name = "simpleValidator")
 //    private IReqValidator reqValidator;
 
-    @Reference(interfaceClass = UserAPI.class)
-    private UserAPI userAPI;
+//    @Reference(interfaceClass = UserAPI.class)
+//    private UserAPI userAPI;
 
     @RequestMapping(value = "${jwt.auth-path}")
     public ResponseVO<?> createAuthenticationToken(AuthRequest authRequest) {

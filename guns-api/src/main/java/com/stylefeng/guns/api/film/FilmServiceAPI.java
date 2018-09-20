@@ -55,4 +55,18 @@ public interface FilmServiceAPI {
 
     FilmDetailVO getFilmDetail(int searchType, String searchParam);
 
+
+    // 影片描述信息
+    FilmDescVO getFilmDesc(String filmId);
+
+    // 图片地址
+    ImgVO getImgs(String filmId);
+
+
+    // 获取导演
+    ActorVO getDirector(String filmId);
+
+    // 演员信息
+    List<ActorVO> getActors(String filmId);
+
 }

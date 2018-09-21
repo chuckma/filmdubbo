@@ -1,6 +1,8 @@
 package com.stylefeng.guns.rest.modular.film;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.dubbo.rpc.RpcContext;
+import com.stylefeng.guns.api.film.FilmAsyncServiceAPI;
 import com.stylefeng.guns.api.film.FilmServiceAPI;
 import com.stylefeng.guns.api.film.vo.*;
 import com.stylefeng.guns.rest.modular.film.vo.FilmConditionVO;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Created by lucasma
@@ -32,6 +36,9 @@ public class FilmController {
     @Reference(interfaceClass = FilmServiceAPI.class)
     private FilmServiceAPI filmServiceAPI;
 
+
+    @Reference(interfaceClass = FilmAsyncServiceAPI.class,async = true)
+    private FilmAsyncServiceAPI filmAsyncServiceAPI;
     /**
      * 获取首页信息
      *
@@ -209,31 +216,56 @@ public class FilmController {
 
     @GetMapping(value = "films/{searchParam}")
     public ResponseVO films(@PathVariable("searchParam")String searchParam,
-                            int searchType) {
+                            int searchType) throws ExecutionException, InterruptedException {
+
+
         // 根据查询类型查询影片
         FilmDetailVO filmDetail = filmServiceAPI.getFilmDetail(searchType, searchParam);
 
+        if (filmDetail == null) {
+            return ResponseVO.success("没有相关影片");
+        } else if (filmDetail.getFilmId() == null || filmDetail.getFilmId().trim().length() == 0) {
+            return ResponseVO.success("没有相关影片");
+        }
+
         String filmId = filmDetail.getFilmId();
+
+
+        // 在这里用到 dubbo 的异步调用
+
         // 影片描述信息
-        FilmDescVO filmDescVO = filmServiceAPI.getFilmDesc(filmId);
+//        FilmDescVO filmDescVO = filmAsyncServiceAPI.getFilmDesc(filmId);
+        filmAsyncServiceAPI.getFilmDesc(filmId);
+        Future<FilmDescVO> filmDescVOFuture = RpcContext.getContext().getFuture();
+
         // 图片地址
-        ImgVO imgVO = filmServiceAPI.getImgs(filmId);
+//        ImgVO imgVO = filmAsyncServiceAPI.getImgs(filmId);
+
+        filmAsyncServiceAPI.getImgs(filmId);
+        Future<ImgVO>  imgVOFuture= RpcContext.getContext().getFuture();
+
         // 演员信息
-        List<ActorVO> actorVOS = filmServiceAPI.getActors(filmId);
+//        List<ActorVO> actorVOS = filmAsyncServiceAPI.getActors(filmId);
+        filmAsyncServiceAPI.getActors(filmId);
+        Future<List<ActorVO> > actorVOSFuture = RpcContext.getContext().getFuture();
         // 导演
-        ActorVO director = filmServiceAPI.getDirector(filmId);
+//        ActorVO director = filmAsyncServiceAPI.getDirector(filmId);
+
+        filmAsyncServiceAPI.getDirector(filmId);
+        Future<ActorVO> actorVOFuture = RpcContext.getContext().getFuture();
 
 
 
         // 包装 actors
         ActorRequestVO actorRequestVO = new ActorRequestVO();
-        actorRequestVO.setActorVOS(actorVOS);
-        actorRequestVO.setDirector(director);
+        actorRequestVO.setActorVOS(actorVOSFuture.get());
+        actorRequestVO.setDirector(actorVOFuture.get());
 
         InfoRequestVO infoRequestVO = new InfoRequestVO();
+
         infoRequestVO.setActors(actorRequestVO);
-        infoRequestVO.setImgVO(imgVO);
-        infoRequestVO.setBiography(filmDescVO.getBiography());
+        infoRequestVO.setImgVO(imgVOFuture.get());
+        infoRequestVO.setBiography(filmDescVOFuture.get().getBiography());
         infoRequestVO.setFilmId(filmId);
 
         filmDetail.setInfo04(infoRequestVO);

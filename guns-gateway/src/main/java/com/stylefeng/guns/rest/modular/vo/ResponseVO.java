@@ -27,6 +27,13 @@ public class ResponseVO<T> {
     private  ResponseVO(){}
 
 
+    public static<T> ResponseVO success(String msg) {
+        ResponseVO responseVO = new ResponseVO();
+        responseVO.setStatus(0);
+        responseVO.setMsg(msg);
+        return responseVO;
+    }
+
     public static<T> ResponseVO success(int nowPage,int totalPage,String imgPre,T data) {
         ResponseVO responseVO = new ResponseVO();
         responseVO.setStatus(0);
@@ -56,7 +63,7 @@ public class ResponseVO<T> {
     // 业务异常
     public static<T> ResponseVO serviceFile(String msg) {
         ResponseVO responseVO = new ResponseVO();
-        responseVO.setStatus(0);
+        responseVO.setStatus(1);
         responseVO.setMsg(msg);
 
         return responseVO;

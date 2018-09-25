@@ -9,7 +9,7 @@ import java.util.Date;
  */
 public class UserInfoModel {
 
-
+    private Integer uuid;
     private String userName;
     private String nickName;
     private String email;
@@ -22,6 +22,13 @@ public class UserInfoModel {
     private long beginTime;
     private long updateTime;
 
+    public Integer getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(Integer uuid) {
+        this.uuid = uuid;
+    }
 
     public String getUserName() {
         return userName;

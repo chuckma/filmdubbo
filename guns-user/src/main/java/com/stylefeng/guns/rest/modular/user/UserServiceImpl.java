@@ -115,14 +115,14 @@ public class UserServiceImpl implements UserAPI {
         MoocUserT moocUserT = new MoocUserT();
         moocUserT.setUuid(userInfoModel.getUuid());
         moocUserT.setUserSex(userInfoModel.getSex());
-        moocUserT.setUpdateTime(time2Date(System.currentTimeMillis()));
+        moocUserT.setUpdateTime(null);//time2Date(System.currentTimeMillis())
         moocUserT.setNickName(userInfoModel.getNickName());
         moocUserT.setLifeState(Integer.parseInt(userInfoModel.getLifeState()));
         moocUserT.setHeadUrl(userInfoModel.getHeadAddress());
         moocUserT.setEmail(userInfoModel.getEmail());
         moocUserT.setBirthday(userInfoModel.getBirthday());
         moocUserT.setBiography(userInfoModel.getBiography());
-        moocUserT.setBeginTime(time2Date(userInfoModel.getBeginTime()));
+        moocUserT.setBeginTime(null);//time2Date(userInfoModel.getBeginTime())
         // 保存到数据库
         Integer integer = moocUserTMapper.updateById(moocUserT);
         if (integer > 0) {

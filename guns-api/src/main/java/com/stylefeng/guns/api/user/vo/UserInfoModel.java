@@ -1,5 +1,6 @@
 package com.stylefeng.guns.api.user.vo;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Date;
  * <p>
  * 系统获取一些用户信息，用户修改自己的基本信息等待
  */
-public class UserInfoModel {
+public class UserInfoModel implements Serializable {
 
     private Integer uuid;
     private String userName;

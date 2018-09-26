@@ -22,7 +22,7 @@ public class UserController {
     private UserAPI userAPI;
 
 
-    @PostMapping("register")
+    @PostMapping(value = "register")
     public ResponseVO register(UserModel userModel) {
         if (userModel.getUserName() == null || userModel.getUserName().length() == 0) {
             return ResponseVO.serviceFile("用户名不能为空");
@@ -43,7 +43,7 @@ public class UserController {
 
 
 
-    @PostMapping("check")
+    @PostMapping(value = "check")
     public ResponseVO check(String userName) {
         if (userName != null && userName.length() > 0) {
             boolean notExists = userAPI.checkUserName(userName);
@@ -59,7 +59,7 @@ public class UserController {
 
 
 
-    @GetMapping("logout")
+    @GetMapping(value = "logout")
     public ResponseVO logout(String userName) {
 
         /**
@@ -79,7 +79,7 @@ public class UserController {
     }
 
 
-    @GetMapping("getUserInfo")
+    @GetMapping(value = "getUserInfo")
     public ResponseVO getUserInfo() {
 
         // 获取当前登录用户，查询数据库
@@ -98,7 +98,7 @@ public class UserController {
     }
 
 
-    @PostMapping("updateUserInfo")
+    @PostMapping(value = "updateUserInfo")
     public ResponseVO updateUserInfo(UserInfoModel userInfoModel) {
 
         // 获取当前登录用户，查询数据库

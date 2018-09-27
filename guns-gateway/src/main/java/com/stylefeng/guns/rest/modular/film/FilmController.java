@@ -33,11 +33,11 @@ public class FilmController {
 
     private static final String IMG_PRE = "img.meetshop.cn";
 
-    @Reference(interfaceClass = FilmServiceAPI.class)
+    @Reference(interfaceClass = FilmServiceAPI.class,check = false)
     private FilmServiceAPI filmServiceAPI;
 
 
-    @Reference(interfaceClass = FilmAsyncServiceAPI.class,async = true)
+    @Reference(interfaceClass = FilmAsyncServiceAPI.class,async = true,check = false)
     private FilmAsyncServiceAPI filmAsyncServiceAPI;
     /**
      * 获取首页信息

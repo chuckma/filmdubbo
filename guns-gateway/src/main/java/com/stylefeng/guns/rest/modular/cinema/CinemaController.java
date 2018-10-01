@@ -23,7 +23,7 @@ import java.util.List;
 public class CinemaController {
 
     private static final String IMG_PRE = "http://img.meetingshop.cn";
-    @Reference(interfaceClass = CinemaServiceAPI.class,check = false)
+    @Reference(interfaceClass = CinemaServiceAPI.class,cache = "lru",check = false)
     private CinemaServiceAPI cinemaServiceAPI;
 
 
@@ -51,6 +51,8 @@ public class CinemaController {
     }
 
     /**
+     * 1 热点数据 接口 dubbo 缓存 cache="lru "
+     * 2
      * 获取影院列表查询条件
      * @param cinemaQueryVO
      * @return

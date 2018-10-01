@@ -6,11 +6,11 @@ import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaConditionResponseVO;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldResponseVO;
+import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldsResponseVO;
 import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import java.util.List;
  * Created by lucasma
  */
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/cinema/")
 public class CinemaController {
 
@@ -88,7 +88,7 @@ public class CinemaController {
 
             CinemaInfoVO cinemaInfo = cinemaServiceAPI.getCinemaInfoById(cinemaId);
             List<FilmInfoVO> filmInfoByCinemaId = cinemaServiceAPI.getFilmInfoByCinemaId(cinemaId);
-            CinemaFieldResponseVO cinemaFieldResponseVO = new CinemaFieldResponseVO();
+            CinemaFieldsResponseVO cinemaFieldResponseVO = new CinemaFieldsResponseVO();
             cinemaFieldResponseVO.setCinemaInfoVO(cinemaInfo);
             cinemaFieldResponseVO.setFilmInfoVOList(filmInfoByCinemaId);
 
@@ -107,11 +107,30 @@ public class CinemaController {
      * @param fieldId
      * @return
      */
-    @GetMapping(value = "getFieldInfo")
+    @PostMapping(value = "getFieldInfo")
     public ResponseVO  getFieldInfo(Integer cinemaId,Integer fieldId) {
 
+        try {
 
-        return null;
+            CinemaInfoVO cinemaInfoById = cinemaServiceAPI.getCinemaInfoById(cinemaId);
+            FilmInfoVO filmInfoByCinemaId = cinemaServiceAPI.getFilmInfoByFieldId(fieldId);
+            HallInfoVO filmFieldInfo = cinemaServiceAPI.getFilmFieldInfo(fieldId);
+
+
+
+            // 假数据 ，后续对接订单接口
+            filmFieldInfo.setSoldSeats("1,2,3");
+
+            CinemaFieldResponseVO cinemaFieldResponseVO = new CinemaFieldResponseVO();
+            cinemaFieldResponseVO.setCinemaInfo(cinemaInfoById);
+            cinemaFieldResponseVO.setFilmInfo(filmInfoByCinemaId);
+            cinemaFieldResponseVO.setHallInfoVO(filmFieldInfo);
+
+            return ResponseVO.success(IMG_PRE,cinemaFieldResponseVO);
+        } catch (Exception e) {
+            log.error("获取选座信息失败！",e);
+            return ResponseVO.serviceFile("获取选座信息失败!");
+        }
     }
 
 }

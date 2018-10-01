@@ -15,6 +15,6 @@ public class FilmFieldVO implements Serializable {
     private String beginTime;
     private String endTime;
     private String language;
-    private String hollName;
+    private String hallName;
     private String price;
 }

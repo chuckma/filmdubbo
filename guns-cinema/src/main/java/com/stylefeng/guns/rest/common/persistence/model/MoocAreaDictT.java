@@ -9,14 +9,14 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 年代信息表
+ * 地域信息表
  * </p>
  *
  * @author lucasma
- * @since 2018-09-17
+ * @since 2018-10-01
  */
-@TableName("mooc_year_dict_t")
-public class MoocYearDictT extends Model<MoocYearDictT> {
+@TableName("mooc_area_dict_t")
+public class MoocAreaDictT extends Model<MoocAreaDictT> {
 
     private static final long serialVersionUID = 1L;
 
@@ -55,7 +55,7 @@ public class MoocYearDictT extends Model<MoocYearDictT> {
 
     @Override
     public String toString() {
-        return "MoocYearDictT{" +
+        return "MoocAreaDictT{" +
         "uuid=" + uuid +
         ", showName=" + showName +
         "}";

@@ -9,14 +9,14 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 演员表
+ * 地域信息表
  * </p>
  *
  * @author lucasma
- * @since 2018-09-17
+ * @since 2018-10-01
  */
-@TableName("mooc_actor_t")
-public class MoocActorT extends Model<MoocActorT> {
+@TableName("mooc_hall_dict_t")
+public class MoocHallDictT extends Model<MoocHallDictT> {
 
     private static final long serialVersionUID = 1L;
 
@@ -26,15 +26,15 @@ public class MoocActorT extends Model<MoocActorT> {
     @TableId(value = "UUID", type = IdType.AUTO)
     private Integer uuid;
     /**
-     * 演员名称
+     * 显示名称
      */
-    @TableField("actor_name")
-    private String actorName;
+    @TableField("show_name")
+    private String showName;
     /**
-     * 演员图片位置
+     * 座位文件存放地址
      */
-    @TableField("actor_img")
-    private String actorImg;
+    @TableField("seat_address")
+    private String seatAddress;
 
 
     public Integer getUuid() {
@@ -45,20 +45,20 @@ public class MoocActorT extends Model<MoocActorT> {
         this.uuid = uuid;
     }
 
-    public String getActorName() {
-        return actorName;
+    public String getShowName() {
+        return showName;
     }
 
-    public void setActorName(String actorName) {
-        this.actorName = actorName;
+    public void setShowName(String showName) {
+        this.showName = showName;
     }
 
-    public String getActorImg() {
-        return actorImg;
+    public String getSeatAddress() {
+        return seatAddress;
     }
 
-    public void setActorImg(String actorImg) {
-        this.actorImg = actorImg;
+    public void setSeatAddress(String seatAddress) {
+        this.seatAddress = seatAddress;
     }
 
     @Override
@@ -68,10 +68,10 @@ public class MoocActorT extends Model<MoocActorT> {
 
     @Override
     public String toString() {
-        return "MoocActorT{" +
+        return "MoocHallDictT{" +
         "uuid=" + uuid +
-        ", actorName=" + actorName +
-        ", actorImg=" + actorImg +
+        ", showName=" + showName +
+        ", seatAddress=" + seatAddress +
         "}";
     }
 }

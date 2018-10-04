@@ -23,7 +23,7 @@ import java.util.List;
 public class CinemaController {
 
     private static final String IMG_PRE = "http://img.meetingshop.cn";
-    @Reference(interfaceClass = CinemaServiceAPI.class,cache = "lru",check = false)
+    @Reference(interfaceClass = CinemaServiceAPI.class,connections = 10,cache = "lru",check = false)
     private CinemaServiceAPI cinemaServiceAPI;
 
 

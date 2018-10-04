@@ -20,7 +20,7 @@ import java.util.List;
  * Created by lucasma
  */
 @Component
-@Service(interfaceClass = CinemaServiceAPI.class)
+@Service(interfaceClass = CinemaServiceAPI.class,executes = 10)
 public class DefaultCinemaServiceImpl implements CinemaServiceAPI {
 
     @Autowired

@@ -1,17 +1,32 @@
 package com.stylefeng.guns.rest.modular.order.service;
 
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
+import com.stylefeng.guns.api.cinema.vo.FilmInfoVO;
+import com.stylefeng.guns.api.cinema.vo.OrderQueryVO;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
+import com.stylefeng.guns.core.util.BigDecimalUtil;
+import com.stylefeng.guns.core.util.UUIDUtil;
 import com.stylefeng.guns.rest.common.persistence.dao.MoocOrderTMapper;
+import com.stylefeng.guns.rest.common.persistence.model.MoocOrderT;
+import com.stylefeng.guns.rest.common.util.FtpUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by lucasma
  */
+@Slf4j
 @Component
 @Service(interfaceClass = OrderServiceAPI.class)
 public class DefaultOrderServiceImpl implements OrderServiceAPI {
@@ -19,34 +34,151 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
     @Autowired
     private MoocOrderTMapper moocOrderTMapper;
 
+    @Autowired
+    private FtpUtil ftpUtil;
+
+    @Reference(interfaceClass = CinemaServiceAPI.class,check = false)
+    private CinemaServiceAPI cinemaServiceAPI;
+
     // 验证出售的票是否为真
     @Override
     public boolean isTrueSeats(String fieldId, String seats) {
         String seatsPath = moocOrderTMapper.getSeatsByFieldId(fieldId);
-        return false;
+        // 读取座位图，判断 seats 是否为真
+        String fileStrByAddress = ftpUtil.getFileStrByAddress(seatsPath);
+
+        // 将 fileStrByAddress 转为 json对象
+        JSONObject jsonObject = JSONObject.parseObject(fileStrByAddress);
+        String ids = jsonObject.get("ids").toString();
+
+        // 每一次匹配上 isTrue ++
+        String[] seatsArr = seats.split(",");
+        String[] idArrs = ids.split(",");
+
+        int isTrue = 0;
+        for (String idArr : idArrs) {
+            for (String s : seatsArr) {
+                if (s.equalsIgnoreCase(idArr)) {
+                    isTrue++;
+                }
+            }
+        }
+        // 如果匹配上的座位数和已售座位数量y一致，则说明都是正确的
+        if (seatsArr.length == isTrue) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // 判断该座位 是否已经被销售
     @Override
     public boolean isNotSoldSeats(String fieldId, String seats) {
-        return false;
+
+        EntityWrapper entityWrapper = new EntityWrapper();
+        entityWrapper.eq("field_id", fieldId);
+        List<MoocOrderT> list = moocOrderTMapper.selectList(entityWrapper);
+
+        String[] seatsArr = seats.split(",");
+
+        // 但凡一个匹配上就返回 false
+        for (MoocOrderT moocOrderT : list) {
+            String[] ids = moocOrderT.getSeatsIds().split(",");
+            for (String id : ids) {
+                for (String s : seatsArr) {
+                    if (s.equalsIgnoreCase(id)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     // 创建订单
     @Override
-    public OrderVO saveOrderInfo(Integer fieldId, String soldSeats, String seatsName, Integer userId) {
-        return null;
+    public OrderVO saveOrderInfo(
+            Integer fieldId, String soldSeats, String seatsName, Integer userId) {
+
+        String uuid = UUIDUtil.genUUID();
+        FilmInfoVO filmInfoVO = cinemaServiceAPI.getFilmInfoByFieldId(fieldId);
+        Integer filmId = Integer.parseInt(filmInfoVO.getFilmId());
+
+        OrderQueryVO orderQueryVO = cinemaServiceAPI.getOrderInfo(fieldId);
+        Integer cinemaId = Integer.parseInt(orderQueryVO.getCinemaId());
+        double filmPrive = Double.parseDouble(orderQueryVO.getFilmPrice());
+
+        // 求订单金额
+
+        int solds = soldSeats.split(",").length;
+        double totalPrice = BigDecimalUtil.mul(solds, filmPrive).doubleValue();
+
+
+        MoocOrderT moocOrderT = new MoocOrderT();
+        moocOrderT.setUuid(uuid);
+        moocOrderT.setSeatsName(seatsName);
+        moocOrderT.setSeatsIds(soldSeats);
+        moocOrderT.setOrderUser(userId);
+        moocOrderT.setOrderPrice(totalPrice);
+        moocOrderT.setFilmPrice(filmPrive);
+        moocOrderT.setFilmId(filmId);
+        moocOrderT.setFieldId(fieldId);
+        moocOrderT.setCinemaId(cinemaId);
+
+
+        Integer insert = moocOrderTMapper.insert(moocOrderT);
+        if (insert > 0) {
+            // 返回查询结果
+            OrderVO orderVO = moocOrderTMapper.getOrderInfoById(uuid);
+            if (orderVO == null || orderVO.getOrderId() == null) {
+                log.error("订单信息查询失败，订单编号为{}", uuid);
+                return null;
+            } else {
+                return orderVO;
+            }
+        } else {
+            // 插入错误
+            log.error("订单插入失败");
+            return null;
+        }
     }
+
 
     // 订单列表
     @Override
-    public List<OrderVO> listOrderByUserId(Integer userId) {
-        return null;
+    public Page<OrderVO> listOrderByUserId(Integer userId, Page<OrderVO> page) {
+        Page<OrderVO> result = new Page<>();
+        if (userId == null) {
+            log.error("订单查询失败，用户编号未传入");
+            return null;
+        } else {
+            List<OrderVO> ordersByUserId = moocOrderTMapper.getOrdersByUserId(userId, page);
+            if (ordersByUserId == null & ordersByUserId.size() == 0) {
+                result.setTotal(0);
+                result.setRecords(new ArrayList<>());
+                return result;
+            } else {
+                // 获取订单总数
+                EntityWrapper<MoocOrderT> entityWrapper = new EntityWrapper();
+                entityWrapper.eq("order_user", userId);
+                Integer counts = moocOrderTMapper.selectCount(entityWrapper);
+                result.setTotal(counts);
+                result.setRecords(ordersByUserId);
+                return result;
+            }
+        }
     }
 
     // 场次座位信息
     @Override
     public String getSoldSeatsByFieldId(Integer fieldId) {
-        return null;
+
+        if(fieldId == null){
+            log.error("查询已售座位错误，未传入任何场次编号");
+            return "";
+        }else{
+            String soldSeatsByFieldId = moocOrderTMapper.getSoldSeatsByFieldId(fieldId);
+            return soldSeatsByFieldId;
+        }
     }
 }

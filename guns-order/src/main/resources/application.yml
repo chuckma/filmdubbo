@@ -12,13 +12,13 @@ jwt:
 
 
 ftp:
-  host-name: 192.168.2.101
-  port: 2100
-  user-name: ftp
-  password: ftp
+  host-name: 39.104.92.14
+  port: 21
+  user-name: ftpuser
+  password: 111111
 
 server:
-  port: 8085 #项目端口
+  port: 8086 #项目端口
 
 mybatis-plus:
   mapper-locations: classpath*:com/stylefeng/guns/rest/**/mapping/*.xml
@@ -42,7 +42,7 @@ spring:
     registry: zookeeper://127.0.0.1:2181
     protocol:
       name: dubbo
-      port: 20885
+      port: 20886
   datasource:
       url: jdbc:mysql://127.0.0.1:3306/guns_rest?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false&serverTimezone=UTC
       username: root

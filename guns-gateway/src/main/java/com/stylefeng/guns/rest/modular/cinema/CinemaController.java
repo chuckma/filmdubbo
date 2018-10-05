@@ -4,11 +4,13 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
+import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaConditionResponseVO;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldResponseVO;
 import com.stylefeng.guns.rest.modular.cinema.vo.CinemaFieldsResponseVO;
 import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +28,9 @@ public class CinemaController {
     @Reference(interfaceClass = CinemaServiceAPI.class,connections = 10,cache = "lru",check = false)
     private CinemaServiceAPI cinemaServiceAPI;
 
+
+    @Reference(interfaceClass = OrderServiceAPI.class,check = false)
+    private OrderServiceAPI orderServiceAPI;
 
     /**
      * 1、	查询影院列表-根据条件查询所有影院
@@ -120,8 +125,9 @@ public class CinemaController {
 
 
 
-            // 假数据 ，后续对接订单接口
-            filmFieldInfo.setSoldSeats("1,2,3");
+            // 对接订单接口
+            filmFieldInfo.setSoldSeats(orderServiceAPI.getSoldSeatsByFieldId(fieldId));
+
 
             CinemaFieldResponseVO cinemaFieldResponseVO = new CinemaFieldResponseVO();
             cinemaFieldResponseVO.setCinemaInfo(cinemaInfoById);

@@ -6,10 +6,7 @@ import com.baomidou.mybatisplus.plugins.Page;
 import com.stylefeng.guns.api.cinema.CinemaServiceAPI;
 import com.stylefeng.guns.api.cinema.vo.*;
 import com.stylefeng.guns.rest.common.persistence.dao.*;
-import com.stylefeng.guns.rest.common.persistence.model.MoocAreaDictT;
-import com.stylefeng.guns.rest.common.persistence.model.MoocBrandDictT;
-import com.stylefeng.guns.rest.common.persistence.model.MoocCinemaT;
-import com.stylefeng.guns.rest.common.persistence.model.MoocHallDictT;
+import com.stylefeng.guns.rest.common.persistence.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -232,5 +229,17 @@ public class DefaultCinemaServiceImpl implements CinemaServiceAPI {
         FilmInfoVO filmInfo = moocFieldTMapper.getFilmInfoById(fieldId);
 
         return filmInfo;
+    }
+
+    @Override
+    public OrderQueryVO getOrderInfo(int fieldId) {
+
+        OrderQueryVO queryVO = new OrderQueryVO();
+        MoocFieldT moocFieldT = moocFieldTMapper.selectById(fieldId);
+
+        queryVO.setCinemaId(moocFieldT.getCinemaId() + "");
+        queryVO.setFilmPrice(moocFieldT.getPrice() + "");
+
+        return queryVO ;
     }
 }

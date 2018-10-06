@@ -51,9 +51,16 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
         JSONObject jsonObject = JSONObject.parseObject(fileStrByAddress);
         String ids = jsonObject.get("ids").toString();
 
+
+
         // 每一次匹配上 isTrue ++
         String[] seatsArr = seats.split(",");
         String[] idArrs = ids.split(",");
+
+        for (String idArr : idArrs) {
+            log.info(idArr);
+        }
+
 
         int isTrue = 0;
         for (String idArr : idArrs) {

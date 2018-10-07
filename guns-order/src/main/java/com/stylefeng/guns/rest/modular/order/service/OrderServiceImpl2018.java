@@ -12,14 +12,14 @@ import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
 import com.stylefeng.guns.core.util.BigDecimalUtil;
 import com.stylefeng.guns.core.util.UUIDUtil;
-import com.stylefeng.guns.rest.common.persistence.dao.MoocOrderTMapper;
-import com.stylefeng.guns.rest.common.persistence.model.MoocOrderT;
+import com.stylefeng.guns.rest.common.persistence.dao.MoocOrder2018TMapper;
+import com.stylefeng.guns.rest.common.persistence.dao.MoocOrder2018TMapper;
+import com.stylefeng.guns.rest.common.persistence.model.MoocOrder2018T;
 import com.stylefeng.guns.rest.common.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +28,11 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@Service(interfaceClass = OrderServiceAPI.class,group = "default")
-public class DefaultOrderServiceImpl implements OrderServiceAPI {
+@Service(interfaceClass = OrderServiceAPI.class,group = "order2017")
+public class OrderServiceImpl2018 implements OrderServiceAPI {
 
     @Autowired
-    private MoocOrderTMapper moocOrderTMapper;
+    private MoocOrder2018TMapper moocOrder2018TMapper;
 
     @Autowired
     private FtpUtil ftpUtil;
@@ -43,7 +43,7 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
     // 验证出售的票是否为真
     @Override
     public boolean isTrueSeats(String fieldId, String seats) {
-        String seatsPath = moocOrderTMapper.getSeatsByFieldId(fieldId);
+        String seatsPath = moocOrder2018TMapper.getSeatsByFieldId(fieldId);
         // 读取座位图，判断 seats 是否为真
         String fileStrByAddress = ftpUtil.getFileStrByAddress(seatsPath);
 
@@ -84,12 +84,12 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
 
         EntityWrapper entityWrapper = new EntityWrapper();
         entityWrapper.eq("field_id", fieldId);
-        List<MoocOrderT> list = moocOrderTMapper.selectList(entityWrapper);
+        List<MoocOrder2018T> list = moocOrder2018TMapper.selectList(entityWrapper);
 
         String[] seatsArr = seats.split(",");
 
         // 但凡一个匹配上就返回 false
-        for (MoocOrderT moocOrderT : list) {
+        for (MoocOrder2018T moocOrderT : list) {
             String[] ids = moocOrderT.getSeatsIds().split(",");
             for (String id : ids) {
                 for (String s : seatsArr) {
@@ -121,7 +121,7 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
         double totalPrice = BigDecimalUtil.mul(solds, filmPrive).doubleValue();
 
 
-        MoocOrderT moocOrderT = new MoocOrderT();
+        MoocOrder2018T moocOrderT = new MoocOrder2018T();
         moocOrderT.setUuid(uuid);
         moocOrderT.setSeatsName(seatsName);
         moocOrderT.setSeatsIds(soldSeats);
@@ -133,10 +133,10 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
         moocOrderT.setCinemaId(cinemaId);
 
 
-        Integer insert = moocOrderTMapper.insert(moocOrderT);
+        Integer insert = moocOrder2018TMapper.insert(moocOrderT);
         if (insert > 0) {
             // 返回查询结果
-            OrderVO orderVO = moocOrderTMapper.getOrderInfoById(uuid);
+            OrderVO orderVO = moocOrder2018TMapper.getOrderInfoById(uuid);
             if (orderVO == null || orderVO.getOrderId() == null) {
                 log.error("订单信息查询失败，订单编号为{}", uuid);
                 return null;
@@ -159,16 +159,16 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
             log.error("订单查询失败，用户编号未传入");
             return null;
         } else {
-            List<OrderVO> ordersByUserId = moocOrderTMapper.getOrdersByUserId(userId, page);
+            List<OrderVO> ordersByUserId = moocOrder2018TMapper.getOrdersByUserId(userId, page);
             if (ordersByUserId == null & ordersByUserId.size() == 0) {
                 result.setTotal(0);
                 result.setRecords(new ArrayList<>());
                 return result;
             } else {
                 // 获取订单总数
-                EntityWrapper<MoocOrderT> entityWrapper = new EntityWrapper();
+                EntityWrapper<MoocOrder2018T> entityWrapper = new EntityWrapper();
                 entityWrapper.eq("order_user", userId);
-                Integer counts = moocOrderTMapper.selectCount(entityWrapper);
+                Integer counts = moocOrder2018TMapper.selectCount(entityWrapper);
                 result.setTotal(counts);
                 result.setRecords(ordersByUserId);
                 return result;
@@ -184,7 +184,7 @@ public class DefaultOrderServiceImpl implements OrderServiceAPI {
             log.error("查询已售座位错误，未传入任何场次编号");
             return "";
         }else{
-            String soldSeatsByFieldId = moocOrderTMapper.getSoldSeatsByFieldId(fieldId);
+            String soldSeatsByFieldId = moocOrder2018TMapper.getSoldSeatsByFieldId(fieldId);
             return soldSeatsByFieldId;
         }
     }

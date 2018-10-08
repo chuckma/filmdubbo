@@ -2,8 +2,11 @@ package com.stylefeng.guns.rest.modular.order;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
+import com.stylefeng.guns.core.util.TokenBucket;
 import com.stylefeng.guns.rest.common.CurrentUser;
 import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,7 @@ import java.util.List;
 @RequestMapping(value = "/order/")
 public class OrderController {
 
+    private static TokenBucket tokenBucket = new TokenBucket();
 
     @Reference(
             interfaceClass = OrderServiceAPI.class,
@@ -41,6 +45,33 @@ public class OrderController {
     )
     private OrderServiceAPI orderServiceAPI2017;
 
+
+
+
+//    public ResponseVO error(Integer fieldId,String soldSeats,String seatsName){
+//        return ResponseVO.serviceFile("抱歉，下单的人太多了，请稍后重试");
+//    }
+
+    // 购票
+    /*
+        信号量隔离
+        线程池隔离
+        线程切换
+     */
+    /*@HystrixCommand(fallbackMethod = "error", commandProperties = {
+            @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "4000"),
+            @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "10"),
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "50")},
+            threadPoolProperties = {
+                    @HystrixProperty(name = "coreSize", value = "1"),
+                    @HystrixProperty(name = "maxQueueSize", value = "10"),
+                    @HystrixProperty(name = "keepAliveTimeMinutes", value = "1000"),
+                    @HystrixProperty(name = "queueSizeRejectionThreshold", value = "8"),
+                    @HystrixProperty(name = "metrics.rollingStats.numBuckets", value = "12"),
+                    @HystrixProperty(name = "metrics.rollingStats.timeInMilliseconds", value = "1500")
+            })*/
+
     /**
      * 售票接口
      *
@@ -52,29 +83,34 @@ public class OrderController {
     @PostMapping(value = "butTickets")
     public ResponseVO butTickets(Integer fieldId, String soldSeats, String seatsName) {
         try {
-            // 验证出售的票是否为真
-            boolean trueSeats = orderServiceAPI.isTrueSeats(fieldId + "", soldSeats);
+            if (tokenBucket.getToken()) {
+                // 验证出售的票是否为真
+                boolean trueSeats = orderServiceAPI.isTrueSeats(fieldId + "", soldSeats);
 
-            // 判断该座位 是否已经被销售
-            boolean isNotSold = orderServiceAPI.isNotSoldSeats(fieldId + "", soldSeats);
+                // 判断该座位 是否已经被销售
+                boolean isNotSold = orderServiceAPI.isNotSoldSeats(fieldId + "", soldSeats);
 
-            // 验证是否需要创建订单信息
-            if (trueSeats && isNotSold) {
-                // 创建订单 ？ 获取登录人
-                String userId = CurrentUser.getUserId();
-                if (userId == null && userId.trim().length() == 0) {
-                    return ResponseVO.serviceFile("用户未登录");
-                }
-                OrderVO orderVO = orderServiceAPI.saveOrderInfo(fieldId, soldSeats, seatsName, Integer.parseInt(userId));
-                if (orderVO == null) {
-                    log.error("购票失败！");
-                    return ResponseVO.serviceFile("购票异常！");
+                // 验证是否需要创建订单信息
+                if (trueSeats && isNotSold) {
+                    // 创建订单 ？ 获取登录人
+                    String userId = CurrentUser.getUserId();
+                    if (userId == null && userId.trim().length() == 0) {
+                        return ResponseVO.serviceFile("用户未登录");
+                    }
+                    OrderVO orderVO = orderServiceAPI.saveOrderInfo(fieldId, soldSeats, seatsName, Integer.parseInt(userId));
+                    if (orderVO == null) {
+                        log.error("购票失败！");
+                        return ResponseVO.serviceFile("购票异常！");
+                    } else {
+                        return ResponseVO.success(orderVO);
+                    }
                 } else {
-                    return ResponseVO.success(orderVO);
+                    return ResponseVO.serviceFile("订单中的座位异常！");
                 }
             } else {
-                return ResponseVO.serviceFile("订单中的座位异常！");
+                return ResponseVO.serviceFile("购票人数太多，请稍后再试！");
             }
+
         } catch (Exception e) {
             log.error("购票异常",e);
             return ResponseVO.serviceFile("购票异常");

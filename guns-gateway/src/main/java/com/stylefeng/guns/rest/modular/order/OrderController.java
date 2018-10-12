@@ -2,8 +2,8 @@ package com.stylefeng.guns.rest.modular.order;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.plugins.Page;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+//import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+//import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
 import com.stylefeng.guns.core.util.TokenBucket;
@@ -45,18 +45,19 @@ public class OrderController {
     )
     private OrderServiceAPI orderServiceAPI2017;
 
+    public ResponseVO error(Integer fieldId, String soldSeats, String seatsName) {
+        return ResponseVO.serviceFile("抱歉，下单的人太多了，请稍后重试");
+    }
 
+    /**/
 
-
-//    public ResponseVO error(Integer fieldId,String soldSeats,String seatsName){
-//        return ResponseVO.serviceFile("抱歉，下单的人太多了，请稍后重试");
-//    }
-
-    // 购票
-    /*
-        信号量隔离
-        线程池隔离
-        线程切换
+    /**
+     * 售票接口
+     *
+     * @param fieldId   场次
+     * @param soldSeats 座位
+     * @param seatsName
+     * @return
      */
     /*@HystrixCommand(fallbackMethod = "error", commandProperties = {
             @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
@@ -71,15 +72,6 @@ public class OrderController {
                     @HystrixProperty(name = "metrics.rollingStats.numBuckets", value = "12"),
                     @HystrixProperty(name = "metrics.rollingStats.timeInMilliseconds", value = "1500")
             })*/
-
-    /**
-     * 售票接口
-     *
-     * @param fieldId   场次
-     * @param soldSeats 座位
-     * @param seatsName
-     * @return
-     */
     @PostMapping(value = "butTickets")
     public ResponseVO butTickets(Integer fieldId, String soldSeats, String seatsName) {
         try {

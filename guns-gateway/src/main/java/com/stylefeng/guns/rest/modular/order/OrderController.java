@@ -4,9 +4,13 @@ import com.alibaba.dubbo.config.annotation.Reference;
 import com.baomidou.mybatisplus.plugins.Page;
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
+import com.stylefeng.guns.api.alipay.AlipayServiceAPI;
+import com.stylefeng.guns.api.alipay.vo.AliPayInfoVO;
+import com.stylefeng.guns.api.alipay.vo.AliPayResultVO;
 import com.stylefeng.guns.api.order.OrderServiceAPI;
 import com.stylefeng.guns.api.order.vo.OrderVO;
 import com.stylefeng.guns.core.util.TokenBucket;
+import com.stylefeng.guns.core.util.ToolUtil;
 import com.stylefeng.guns.rest.common.CurrentUser;
 import com.stylefeng.guns.rest.modular.vo.ResponseVO;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +32,8 @@ public class OrderController {
 
     private static TokenBucket tokenBucket = new TokenBucket();
 
+    private static final String  IMG_GRE = "http://meetingshop.cn";
+
     @Reference(
             interfaceClass = OrderServiceAPI.class,
             check = false,
@@ -36,6 +42,8 @@ public class OrderController {
     private OrderServiceAPI orderServiceAPI;
 
 
+    @Reference(interfaceClass = AlipayServiceAPI.class, check = false)
+    private AlipayServiceAPI alipayServiceAPI;
 
 
     @Reference(
@@ -140,4 +148,47 @@ public class OrderController {
         }
     }
 
+
+    @PostMapping(value = "getPayInfo")
+    public ResponseVO getPayInfo(@RequestParam("orderId") String orderId) {
+
+        String userId = CurrentUser.getUserId();
+        if (userId == null || userId.trim().length() == 0) {
+            return ResponseVO.serviceFile("用户未登录");
+        }
+
+        AliPayInfoVO aliPayInfoVO = alipayServiceAPI.getQRCode(orderId);
+        // 订单二维码的查询
+        return ResponseVO.success(IMG_GRE, aliPayInfoVO);
+
+
+    }
+
+
+    @PostMapping(value = "getPayResult")
+    public ResponseVO getPayResult(
+            @RequestParam("orderId") String orderId,
+            @RequestParam(name="tryNum",required = false,defaultValue = "1") Integer tryNum) {
+
+        String userId = CurrentUser.getUserId();
+        if (userId == null || userId.trim().length() == 0) {
+            return ResponseVO.serviceFile("用户未登录");
+        }
+
+        // 是否支付超时
+        if (tryNum >= 4) {
+            return ResponseVO.serviceFile("订单支付失败");
+
+        } else {
+            AliPayResultVO aliPayResultVO = alipayServiceAPI.getOrderStatus(orderId);
+            if (aliPayResultVO == null || ToolUtil.isEmpty(aliPayResultVO.getOrderId())) {
+                AliPayResultVO seviceFailVO = new AliPayResultVO();
+                seviceFailVO.setOrderId(orderId);
+                seviceFailVO.setOrderStatus(0);
+                seviceFailVO.setOrderMsg("支付未成功！");
+                return ResponseVO.success(seviceFailVO);
+            }
+            return ResponseVO.success(aliPayResultVO);
+        }
+    }
 }

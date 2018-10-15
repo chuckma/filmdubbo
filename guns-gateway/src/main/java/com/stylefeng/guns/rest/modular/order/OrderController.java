@@ -1,6 +1,7 @@
 package com.stylefeng.guns.rest.modular.order;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.dubbo.rpc.RpcContext;
 import com.baomidou.mybatisplus.plugins.Page;
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 //import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -174,6 +175,9 @@ public class OrderController {
         if (userId == null || userId.trim().length() == 0) {
             return ResponseVO.serviceFile("用户未登录");
         }
+
+        // 当前登录人信息传递给后端
+        RpcContext.getContext().setAttachment("userId", userId);
 
         // 是否支付超时
         if (tryNum >= 4) {

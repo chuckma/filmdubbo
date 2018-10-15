@@ -16,9 +16,10 @@ ftp:
   port: 21
   user-name: ftpuser
   password: 111111
+  upload-path: /qrcode
 
 server:
-  port: 8086 #项目端口
+  port: 8087 #项目端口
 
 mybatis-plus:
   mapper-locations: classpath*:com/stylefeng/guns/rest/**/mapping/*.xml
@@ -42,7 +43,7 @@ spring:
     registry: zookeeper://127.0.0.1:2181
     protocol:
       name: dubbo
-      port: 20886
+      port: 20887
   datasource:
       url: jdbc:mysql://127.0.0.1:3306/guns_rest?autoReconnect=true&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false&serverTimezone=UTC
       username: root
